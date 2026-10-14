@@ -1,74 +1,65 @@
-# AI UGC Video Ad Generator: n8n + Gemini Veo 3 + Telegram
+# Competitor Ad Spy & UGC Script Cloner: n8n + Apify + Gemini Video Analysis
 
-> An n8n workflow that turns one photo and a hook idea into an 8-second vertical (9:16) AI video ad with sound, using Gemini, Google Veo and Telegram approval.
+> An automated n8n workflow that spies on competitor Meta (Facebook) Ad Libraries, filters 14+ day proven winning video ads, reverse-engineers their 3-second hooks and psychological angles using Google Gemini multimodal video AI, and delivers 3 ready-to-test UGC script variations directly to your Telegram chat.
 
 [![n8n Workflow Automation](https://img.shields.io/badge/n8n-Workflow%20Automation-EA4B71?logo=n8n&logoColor=white)](https://n8n.io/)
-[![Google Veo](https://img.shields.io/badge/Google%20Veo-Video%20Generation-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
-[![Gemini Image (Nano Banana)](https://img.shields.io/badge/Gemini-Nano%20Banana%20Image%20Editing-FFD700?logo=google&logoColor=black)](https://ai.google.dev/)
-[![Telegram Bot API](https://img.shields.io/badge/Telegram-Human--in--the--Loop-24A1DE?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
+[![Apify Actor Scraper](https://img.shields.io/badge/Apify-Meta%20Ads%20Scraper-00A65A?logo=apify&logoColor=white)](https://apify.com/apify/facebook-ads-scraper)
+[![Google Gemini Video AI](https://img.shields.io/badge/Google%20Gemini-Multimodal%20Video%20Analysis-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Telegram Bot API](https://img.shields.io/badge/Telegram-Real--time%20Delivery-24A1DE?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
 
 ## What is this n8n workflow?
 
-This is a human-in-the-loop (HITL) **n8n workflow** for creating short **UGC-style video hooks** for paid social ads (Meta Reels, TikTok, YouTube Shorts). You send a reference photo and a hook idea to a **Telegram bot**. The workflow edits the photo with a **Gemini image model (Nano Banana)**, and you approve or change the frame in Telegram. Only after you approve does it write a video prompt with a **Gemini "Director" agent** and render a **9:16 video with native audio** using **Google Veo**.
+This is a production-grade **n8n automation** designed for direct-to-consumer (DTC) brands, performance media buyers, and creative strategists. 
 
-**Who it is for:** DTC paid-social agencies, e-commerce media buyers, and creative strategists who want to test many ad hooks quickly.
+Instead of guessing what creative concepts might work or manually scrolling through hundreds of competitor ads in the Facebook Ad Library, this workflow automates the entire **competitor intelligence and script ideation pipeline**:
 
-**The problem it solves:**
+1. **Trigger on Demand:** Paste a competitor's Facebook Ad Library URL into your private Telegram bot.
+2. **Scrape Active Ads:** Calls Apify's Meta Ads Scraper to extract active ad creative data and direct video streams.
+3. **Filter 14+ Day Winners:** An intelligent JavaScript filter discards short-lived test ads and surfaces only ads running for **14 or more days** (statistically proven, scaling winners that competitors are spending real ad budget on).
+4. **Multimodal Video Understanding:** Downloads the top 3 longest-running ad MP4s and passes the raw video binaries to **Google Gemini** for frame-by-frame and audio analysis.
+5. **Hook & Script Cloning:** Gemini breaks down the exact spoken hook in the first 3 seconds, the visual hook, the psychological angle, and generates **3 high-converting 20-second UGC script variations**.
+6. **Instant Telegram Delivery:** Formats the findings into an ad intelligence card with a direct video link and delivers it straight to your Telegram chat.
 
-- Waiting days for a creator video makes hook testing slow and expensive.
-- Blind text-to-video prompting wastes video credits on frames you cannot use.
+---
 
-**The fix:** lock the look of the first frame with cheap image edits first. Spend video credits only on a frame you have already approved.
-
-## At a glance
+## At a Glance
 
 | Item | Details |
-| --- | --- |
-| Platform | n8n (n8n Cloud or self-hosted) |
-| Interface | Telegram bot with inline approve / edit buttons |
-| Image editing | Gemini image model ("Nano Banana") |
-| Video generation | Google Veo, image-to-video, 9:16, 8 seconds, native audio |
-| Prompt writer | Gemini "Director" agent that returns strict JSON |
-| Image hosting | ImgBB, Cloudinary or AWS S3 |
-| Veo render time | About 40 to 90 seconds in our runs |
-| License | MIT |
+| :--- | :--- |
+| **Platform** | n8n (n8n Cloud or self-hosted Docker / npm) |
+| **Interface** | Telegram Bot (send Facebook Ad Library URL) |
+| **Scraper** | [Apify Facebook Ads Scraper](https://apify.com/apify/facebook-ads-scraper) (`apify~facebook-ads-scraper`) |
+| **Winner Threshold** | Active video ads running for **$\ge$ 14 days**, sorted by longevity |
+| **AI Model** | Google Gemini (`models/gemini-3-flash-preview` / Gemini multimodal video) |
+| **AI Input** | Native binary MP4 stream (analyzes audio dialogue + visual frame cues) |
+| **Output Deliverable** | HTML Telegram card with 3s hook, visual cue, psychological trigger, and 3 cloned UGC scripts |
+| **Processing Time** | ~30 to 60 seconds per winning ad |
+| **Workflow File** | [`Competitor Ad Spy & Script Cloner.json`](./Competitor%20Ad%20Spy%20&%20Script%20Cloner.json) |
+| **License** | MIT |
 
-## Model versions (read this first)
+---
 
-Google renames and retires model IDs often. This workflow was first built with `gemini-2.5-flash-image-preview` and `veo-3.0-generate-preview`. Google's deprecations page lists those preview IDs as retired. As of October 2026, it points to `gemini-3.1-flash-image` for image editing and `veo-3.1-generate-preview` / `veo-3.1-fast-generate-preview` for video.
+## Why the 14-Day Filter Matters
 
-Set the model IDs in your `.env` file (see [Environment variables](#environment-variables)) and check the current list at [Gemini API deprecations](https://ai.google.dev/gemini-api/docs/deprecations). A `404` or "model not found" error from Google usually means a retired model ID.
+Most creative spy tools overwhelm media buyers with hundreds of new ads. The problem: **80% of launched ads fail within 48 to 72 hours**.
 
-*Last checked: October 2026.*
+If a competitor has been paying to run a video ad continuously for **14, 30, or 100+ days**, it is virtually guaranteed to be a **profitable winner**. This workflow ignores all vanity and short-lived test ads, isolating only the proven creative formulas that drive revenue.
 
-## Quick start (5 minutes)
+---
 
-1. **Clone the repo**
-
-   ```bash
-   git clone https://github.com/TechGenDM/Video-Generation-With-Gemini.git
-   cd Video-Generation-With-Gemini
-   ```
-
-2. **Add credentials in n8n** (Credentials menu):
-   - A **Telegram API** credential with your bot token (create the bot with [@BotFather](https://t.me/BotFather)).
-   - A **Google Gemini (PaLM) API** credential, or a **Header Auth** credential with `x-goog-api-key: <your Gemini API key>`.
-
-3. **Import the workflow:** in n8n, open the workflow menu (⋮), choose **Import from File**, and select `Competitor Ad Spy & Script Cloner.json`.
-
-4. **Fill in your environment variables** (copy the example below into `.env` or your n8n environment settings).
-
-5. **Bind credentials and activate:** attach your saved credentials to each highlighted node, activate the workflow, then send a photo with a caption to your Telegram bot.
-
-## How the workflow works
+## Workflow Canvas & Architecture
 
 <p align="center">
   <img src="assets/n8n-page.png" alt="n8n Pipeline Canvas" width="100%">
 </p>
 <p align="center">
-  <em>The complete n8n workflow pipeline canvas: listening for Telegram triggers, filtering winning competitor ads, and orchestrating Gemini AI analysis.</em>
+  <em>The complete n8n workflow pipeline canvas: Telegram Trigger &rarr; Apify Meta Scraper &rarr; 14+ Day Winner Filter &rarr; Batch Loop &rarr; MP4 Downloader &rarr; Gemini Video Analysis &rarr; Telegram HTML Delivery.</em>
 </p>
+
+### Architecture Sequence
 
 ```mermaid
 sequenceDiagram
@@ -76,73 +67,91 @@ sequenceDiagram
     actor User as Media Buyer (Telegram)
     participant TG as Telegram Bot Node
     participant N8N as n8n Orchestrator
-    participant NB as Gemini Image Model (Nano Banana)
-    participant CDN as Image Host (ImgBB / S3)
-    participant Agent as Gemini Director Agent
-    participant VideoAPI as Google Veo Video API
+    participant Apify as Apify (Meta Ads Scraper)
+    participant Code as Filter Node (14+ Days)
+    participant Loop as Split in Batches
+    participant VideoCDN as Ad Video Stream
+    participant Gemini as Google Gemini (Video AI)
 
-    User->>TG: Send raw reference photo + hook concept
-    TG->>N8N: Extract metadata & binary file stream
-    N8N->>NB: POST :generateContent (Image + edit instructions)
-    NB-->>N8N: 200 OK (Base64 edited frame)
-    N8N->>TG: Send edited preview + [Approve] / [Request Edits]
-
+    User->>TG: Send Facebook Ad Library URL
+    TG->>N8N: Extract message text & chat_id
+    N8N->>Apify: POST /run-sync-get-dataset-items (Fetch active ads)
+    Apify-->>N8N: 200 OK (Dataset items with video URLs & start dates)
+    N8N->>Code: Filter for videoUrl & days_running >= 14
+    Code-->>N8N: Top 3 longest running ads sorted descending
+    N8N->>Loop: Initialize item loop (1 ad at a time)
+    
     rect rgb(240, 248, 255)
-        note right of User: Human-in-the-Loop (HITL) Frame Lock
-        alt User requests revisions
-            User->>TG: "Make lighting warmer, tighten crop on face"
-            TG->>N8N: Revision delta prompt
-            N8N->>NB: POST :generateContent (Previous frame + delta)
-            NB-->>N8N: Updated Base64 frame
-            N8N->>TG: Updated preview
-        else User approves frame
-            User->>TG: Clicks "Approve & Render Video"
-        end
+        note over Loop,Gemini: Processing Each Winning Ad
+        Loop->>VideoCDN: GET video_url (Download MP4 binary)
+        VideoCDN-->>Loop: Stream MP4 binary file
+        Loop->>Gemini: Analyze video binary (Prompt: 3s hook, visual, psychology, 3 scripts)
+        Gemini-->>Loop: Strict JSON intelligence payload
+        Loop->>TG: Send formatted HTML message + ad link + 3 cloned scripts
+        TG-->>User: Telegram Intelligence Notification
     end
-
-    N8N->>CDN: POST /upload (Convert Base64 to public HTTPS URL)
-    CDN-->>N8N: Return image_url
-    N8N->>Agent: Prompt: [Image URL + Hook Brief + Direct-Response Rules]
-    Agent-->>N8N: Strict JSON payload (prompt, audio cues, aspect_ratio)
-    N8N->>VideoAPI: POST :predictLongRunning
-    VideoAPI-->>N8N: Operation ID returned
-    N8N->>VideoAPI: Poll operation until done=true
-    N8N->>TG: Send rendered 9:16 MP4 with native audio
-    TG-->>User: Ad-ready UGC hook video
 ```
 
-### 1. Telegram ingestion and session handling
+---
 
-- **Trigger:** a Telegram Trigger node listens for photo uploads and button presses (`message`, `callback_query`).
-- **Metadata:** it extracts `file_id`, `chat_id`, `user_id` and the caption.
-- **File retrieval:** it calls Telegram's `getFile` endpoint to load the photo into n8n.
+## Step-by-Step Node Breakdown
 
-### 2. Gemini image editing loop (Nano Banana)
+### 1. Telegram Trigger
+* **Node Name:** `Telegram Trigger`
+* Listens for inbound messages from authorized users.
+* Accepts any Meta Ad Library URL (e.g., `https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&media_type=video&search_type=page&view_all_page_id=183869772601`).
 
-- **Edit:** the photo and your edit instruction go to the Gemini image model for character-consistent styling, background changes or lighting changes.
-- **Convert:** an n8n **Code node** turns the returned Base64 string (`inlineData.data`) back into an n8n binary file.
-- **Approve:** the edited frame goes to Telegram with two inline buttons: `Approve & Render Video` and `Request Further Edits`.
-- **Loop:** edit requests go back to the image model with the previous frame. An approval moves on to hosting.
+### 2. Scrape Meta Ads via Apify
+* **Node Name:** `Scrape Meta Ads via Apify`
+* Uses an HTTP Request node to call Apify's `apify~facebook-ads-scraper` actor synchronously:
+  ```json
+  {
+    "startUrls": [{"url": "{{ $json.message.text }}"}],
+    "resultsLimit": 30,
+    "activeStatus": "active"
+  }
+  ```
+* Retrieves comprehensive ad snapshot data including start dates, page names, ad copy, and high-definition video URLs (`videoHdUrl`).
 
-### 3. Image hosting and URL conversion
+### 3. Filter 14+ Day Video Winners
+* **Node Name:** `Filter 14+ Day Video Winners`
+* JavaScript Code node that:
+  * Verifies video presence across video snapshots and card carousels.
+  * Calculates ad running duration: `daysRunning = Math.floor((Date.now() - startDate) / (24 * 60 * 60 * 1000))`.
+  * Drops any ad running for fewer than 14 days (`daysRunning < 14`).
+  * Sorts active ads by longevity in descending order (`b.days_running - a.days_running`).
+  * Returns the **top 3 champions**.
 
-- **Why:** passing large Base64 strings through `Wait` and polling nodes uses a lot of memory and fills the n8n execution database.
-- **What it does:** the approved frame is uploaded to ImgBB, Cloudinary or AWS S3. From then on the workflow only passes a short HTTPS URL.
+### 4. Loop Over Items
+* **Node Name:** `Loop Over Items` (`splitInBatches`)
+* Processes winning ads sequentially (batch size: 1) to conserve n8n execution memory and avoid hitting AI provider rate limits.
 
-### 4. Gemini Director agent
+### 5. Download Ad MP4
+* **Node Name:** `Download Ad MP4`
+* HTTP Request node configured with `responseFormat: "file"`.
+* Downloads the direct competitor video file into n8n binary memory for multimodal inspection.
 
-- **Role:** acts as a direct-response paid-social creative director.
-- **Input:** the approved frame URL, your hook idea, the target length (8 seconds) and the Veo audio and visual rules.
-- **Output:** a strict JSON payload with the first-3-seconds motion, handheld camera movement, ambient audio and spoken dialogue.
+### 6. Analyze Video with Gemini
+* **Node Name:** `Analyze Video with Gemini`
+* Uses the `@n8n/n8n-nodes-langchain.googleGemini` node with `models/gemini-3-flash-preview` (or `gemini-2.5-flash` / `gemini-1.5-flash`).
+* Accepts the raw MP4 binary stream directly.
+* Instructs Gemini with direct-response creative guidelines:
+  > *"Analyze this winning competitor video ad. Return strict JSON with: 1) spoken_hook_first_3s, 2) visual_hook_description, 3) psychological_angle, and 4) three cloned 20-second UGC video script variations (with [visual cues] and on-screen text hooks)."*
 
-### 5. Google Veo video and native audio
+### 7. Format Telegram Message
+* **Node Name:** `Format Telegram Message`
+* JavaScript Code node that safely handles JSON parsing, strips markdown code wrappers, escapes HTML special characters, structures the output, and caps the message at 3,990 characters to respect Telegram's message limits.
 
-- **Input:** the Director's `prompt`, the approved starter frame as `image`, `aspectRatio` of `9:16`, a clip length of 8 seconds, and audio generation turned on.
-- **Polling:** an n8n `Wait` node (10 seconds) and an `IF` node check the long-running operation until `done` is `true`. A counter stops the loop after 12 attempts.
+### 8. Send Analysis to Telegram
+* **Node Name:** `Send Analysis to Telegram`
+* Sends the rich HTML report to the user's chat, including a clickable link to watch the raw winning ad MP4.
+* Loops back to process the remaining winning ads.
 
-### 6. Delivery in Telegram
+---
 
-- The workflow formats the intelligence breakdown, extracts key hook psychology, and delivers the ready-to-test script variations directly to your Telegram chat.
+## Live Output Example
+
+Here is a real execution output from the bot analyzing an ad run by **AG1 (Athletic Greens)** running for **137 days**:
 
 <p align="center">
   <img src="assets/telegram-bot-page.png" alt="Telegram Bot Output: Competitor Hook Analysis and Cloned Scripts" width="380">
@@ -151,192 +160,143 @@ sequenceDiagram
   <em>Live Telegram bot delivery: competitor ad intelligence, 3-second hook breakdown, psychological angles, and 3 cloned script variations.</em>
 </p>
 
-## Requirements
-
-- **n8n:** n8n Cloud or self-hosted (Docker or npm). Version `1.50.0` or newer is recommended.
-- **Telegram bot:** a bot token from [@BotFather](https://t.me/BotFather).
-- **Google AI Studio or Vertex AI API key:** a paid project with access to a Gemini image model, a Gemini text model for the Director, and a Veo model.
-- **Image host:** an ImgBB API key, a Cloudinary account, or an AWS S3 bucket.
-
-## Environment variables
-
-Add these to your `.env` file or n8n environment settings. Never commit real keys to GitHub.
-
-```env
-# Telegram
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-
-# Google Gemini and Veo (Google AI Studio)
-GEMINI_API_KEY=your_gemini_api_key
-
-# Model IDs change often. Check the "Model versions" section before you run.
-GEMINI_IMAGE_ENDPOINT=https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent
-GEMINI_VEO_ENDPOINT=https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-fast-generate-preview:predictLongRunning
-
-# Image host (example: ImgBB)
-IMAGE_HOST_API_KEY=your_imgbb_api_key
-IMAGE_HOST_UPLOAD_URL=https://api.imgbb.com/1/upload
-```
-
-## Director agent prompt and JSON schema
-
-The Director node uses a Gemini text model (the original build used Gemini 2.5 Pro) with `responseMimeType: "application/json"` and this system prompt:
+### Telegram Delivery Breakdown:
 
 ```text
-You are a Lead Direct-Response UGC Video Director optimizing for Meta and TikTok 3-second Thumb-Stop Rate.
-Transform the user's creative concept and reference image into a hyper-realistic, 8-second mobile-first (9:16) video generation payload for Google Veo.
+Competitor Name: AG1 by Athletic Greens
+Days Running: 137
+▶️ Watch Winning Ad MP4
 
-Rules:
-1. Always optimize for vertical mobile viewing (9:16 portrait).
-2. Ground all initial visual action in the provided reference image to guarantee frame-1 continuity.
-3. Engineer the first 2.5 seconds for maximum scroll-stopping motion (e.g., expressive micro-reaction, stepping into frame, handheld camera push-in).
-4. Include explicit native audio cues in the prompt: specify natural ambient background sound and exact spoken dialogue in quotes if applicable.
-5. Output strictly valid JSON matching the schema below with zero markdown wrappers.
+3s Hook: Please stop believing that supporting your health looks like starting your day off by taking a plethora of different supplements.
+
+Visual Hook: A tattooed woman in a bright lime top mixes a green powder drink in a kitchen, using a branded green canister and clear bottle.
+
+Psychological Angle: Simplification and Efficiency. It targets the overwhelm of complex wellness routines by offering a 'one-and-done' solution for foundational nutrition.
+
+Cloned Scripts:
+
+Script 1:
+variation: Routine Overhaul
+hook text: Stop the supplement clutter.
+script: [Close-up of cluttered pill bottles being pushed aside. Cut to the woman scooping AG1 into a bottle.] I used to take ten different vitamins. Now, it's just one scoop. [On-screen text: 75+ ingredients in 1 scoop] It's 75+ vitamins and minerals in one go. [Visual of her shaking the bottle and taking a sip.] My morning routine is finally simple. [CTA: Click to simplify your health.]
+
+Script 2:
+variation: Busy Professional/Mom
+hook text: Foundational health for busy days.
+script: [Quick cuts of the woman multitasking. Cut to her pouring water into the AG1 bottle.] My schedule is non-stop, so my nutrition can't be a chore. [On-screen text: Energy + Gut Health Support] AG1 covers my bases for energy and gut health even when I'm on the move. [Visual of her holding the 'Berry' flavor pouch.] Plus, the berry flavor is actually delicious. [CTA: Get your daily boost here.]
+
+Script 3:
+variation: The Flavor Comparison
+hook text: The health drink that actually tastes good.
+script: [Woman holds three different flavored pouches.] Everyone thinks green drinks taste like grass. [She mixes the 'Original' pineapple-vanilla mix.] This is pineapple-vanilla, and it's a game-changer. [On-screen text: 3 Flavor Options] No more choking down pills or bad-tasting powders. [Visual of her enjoying the drink outdoors.] Just pure, easy nutrition. [CTA: Find your favorite flavor.]
 ```
 
-**Output schema:**
+---
 
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "VeoVideoGenerationPayload",
-  "type": "object",
-  "properties": {
-    "model": {
-      "type": "string",
-      "description": "Current Veo model ID, for example veo-3.1-fast-generate-preview."
-    },
-    "aspect_ratio": {
-      "type": "string",
-      "enum": ["9:16", "16:9"],
-      "default": "9:16"
-    },
-    "duration_seconds": {
-      "type": "integer",
-      "description": "Clip length in seconds. This workflow uses 8.",
-      "default": 8
-    },
-    "generate_audio": {
-      "type": "boolean",
-      "default": true
-    },
-    "prompt": {
-      "type": "string",
-      "description": "UGC video prompt describing the 0-3s visual hook, camera motion, lighting, ambient audio and spoken dialogue."
-    },
-    "image_url": {
-      "type": "string",
-      "format": "uri",
-      "description": "Direct public HTTPS URL of the approved starter frame."
-    }
-  },
-  "required": ["model", "aspect_ratio", "duration_seconds", "generate_audio", "prompt", "image_url"]
-}
+## Quick Start (5 Minutes)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/TechGenDM/Video-Generation-With-Gemini.git
+cd Video-Generation-With-Gemini
 ```
 
-**Example output:**
+### 2. Set Up Credentials in n8n
 
-```json
-{
-  "model": "veo-3.1-fast-generate-preview",
-  "aspect_ratio": "9:16",
-  "duration_seconds": 8,
-  "generate_audio": true,
-  "prompt": "Authentic UGC smartphone selfie video on a sun-drenched Montana ranch at golden hour. In the first 2 seconds, a rugged cowboy in worn denim and a Stetson hat tilts his hat up and leans slightly toward the front-facing lens with a charismatic smirk. Subtle handheld smartphone camera wobble with warm sunset lens flare and floating dust motes. Audio: gentle dry wind rustling across open pasture, leather creaking softly, and the man speaking clearly in a warm gravelly voice: 'Most folks get out-of-state ranch work completely wrong.'",
-  "image_url": "https://i.ibb.co/wN1K9Xp/cowboy-approved-frame.jpg"
-}
-```
+Open your n8n instance and navigate to **Credentials**:
 
-## Example: cowboy lifestyle UGC hook
+1. **Telegram API:** Create a bot via [@BotFather](https://t.me/BotFather) and paste your Bot Token.
+2. **Apify API Token (Header Auth):** 
+   * Obtain an API token from your [Apify Console](https://console.apify.com/account/integrations).
+   * Create an n8n credential of type **Custom Auth / Header Auth** (or Apify token).
+   * Header name: `Authorization`
+   * Value: `Bearer <YOUR_APIFY_TOKEN>`
+3. **Google Gemini (PaLM) API:**
+   * Get an API key from [Google AI Studio](https://aistudio.google.com/).
+   * Create a **Google Gemini (PaLM) Api** credential in n8n and paste your API key.
 
-1. **You send** a raw photo of a man in a jacket with the caption: *"Turn this into a vintage Montana rancher UGC hook at golden hour."*
-2. **Edit 1 (Nano Banana):** adds weathered denim, a sun-bleached Stetson hat and warm ranch backlighting.
-3. **Your feedback:** *"Love the hat. Make the sunset warmer and add floating dust particles."*
-4. **Edit 2:** warmer color temperature and floating dust motes. You tap `Approve & Render Video`.
-5. **Hosting:** the approved frame is uploaded and becomes `https://i.ibb.co/wN1K9Xp/cowboy-approved-frame.jpg`.
-6. **Director and Veo:** the Director writes the 8-second prompt with spoken dialogue and ranch ambience. Veo renders the 9:16 MP4 and the bot sends `cowboy_ugc_hook.mp4` back to your Telegram chat.
+### 3. Import the Workflow
 
-## Best practices
+1. In n8n, click the **Workflows** menu (top-right `...` or `+`).
+2. Choose **Import from File**.
+3. Select [`Competitor Ad Spy & Script Cloner.json`](./Competitor%20Ad%20Spy%20&%20Script%20Cloner.json).
 
-### Keep large Base64 data out of n8n memory
+### 4. Bind Credentials & Activate
 
-Passing raw Base64 strings through several `Wait` and polling nodes slows n8n down. Convert the image to binary once, upload it as soon as you approve it, and pass only the `image_url` string through the rest of the workflow.
+1. Double-check that your credentials are bound to:
+   * `Telegram Trigger` & `Send Analysis to Telegram` (Telegram credential)
+   * `Scrape Meta Ads via Apify` (Apify credential)
+   * `Analyze Video with Gemini` (Gemini credential)
+2. Toggle the workflow to **Active**.
+3. Open Telegram and send your bot any Facebook Ad Library link!
 
-### Poll Veo with a cap
+---
 
-Video generation usually takes 40 to 90 seconds. Use a `Wait` node set to 10 seconds, an `IF` node that checks `{{ $json.done === true }}`, and a counter that stops at 12 attempts. This prevents an endless loop if Google's API is slow.
+## How to Get Competitor Ad Library URLs
 
-### Force strict JSON from the Director
+1. Go to the [Meta Ad Library](https://www.facebook.com/ads/library/).
+2. Select your target country and category (**All Ads**).
+3. Search for your competitor's page (e.g., *Athletic Greens*, *Hims*, *Cirkul*).
+4. Apply the filter: **Media Type &rarr; Videos**, and **Status &rarr; Active ads**.
+5. Copy the URL from your browser's address bar and send it to your bot.
 
-Turn on JSON output mode (`responseMimeType: "application/json"`) on the Director node. Later HTTP Request nodes can then read `{{ $json.prompt }}` directly, with no text cleanup.
+---
 
-## FAQ and troubleshooting
+## Requirements
 
-**Does this n8n workflow work on n8n Cloud?**
-Yes. It uses standard n8n nodes (Telegram, HTTP Request, Code, Wait, IF), so it runs on n8n Cloud or self-hosted n8n.
+* **n8n:** Version `1.50.0` or newer (Cloud or self-hosted).
+* **Apify Account:** Standard plan or free credits for running `apify~facebook-ads-scraper`.
+* **Google Gemini API Key:** Requires access to Gemini multimodal video models (`gemini-3-flash-preview`, `gemini-2.5-flash`, or `gemini-1.5-flash`).
+* **Telegram Bot:** Configured with permissions to read and send messages.
 
-**Why approve an image before making the video?**
-Image edits cost much less than video renders and finish faster. Locking the lighting, outfit and framing on a still means your video credits go to frames you have already approved. Prices change, so check Google's current pricing page for exact numbers.
+---
 
-**I get a 404 or "model not found" error from Google.**
-The model ID is probably retired. Update `GEMINI_IMAGE_ENDPOINT` and `GEMINI_VEO_ENDPOINT` using the [Model versions](#model-versions-read-this-first) section and Google's [deprecations page](https://ai.google.dev/gemini-api/docs/deprecations). If your Director node's JSON schema lists old model IDs, update it too.
+## Best Practices
 
-**Gemini returns Base64, but my image uploader needs binary data.**
-Add an n8n **Code** node right after the Gemini HTTP Request node:
+* **Batching & Execution Limits:** The workflow analyzes the top 3 longest-running ads by default. You can adjust `results.slice(0, 3)` in [Filter 14+ Day Video Winners](./Competitor%20Ad%20Spy%20&%20Script%20Cloner.json#L57) if you want to analyze more or fewer ads per execution.
+* **Apify Actor Limits:** The Apify node sets `"resultsLimit": 30` to keep execution quick and cost-efficient.
+* **Gemini Model Configuration:** If `models/gemini-3-flash-preview` is unavailable or deprecates, switch the model selector in the Gemini node to `models/gemini-2.5-flash` or `models/gemini-1.5-flash`.
 
-```javascript
-const base64Data = $json.candidates[0].content.parts.find(p => p.inlineData)?.inlineData.data;
+---
 
-return [{
-  binary: {
-    data: {
-      data: base64Data,
-      mimeType: 'image/jpeg',
-      fileName: 'approved_frame.jpg'
-    }
-  },
-  json: { ...$json }
-}];
-```
+## Troubleshooting
 
-Then set the upload node to send the binary property named `data`.
+| Problem | Cause | Solution |
+| :--- | :--- | :--- |
+| **Apify returns 0 items** | Competitor has no active video ads or URL is invalid. | Verify that the Facebook Ad Library page has active video ads running. |
+| **No ads pass the filter** | Competitor ads are all newer than 14 days. | Lower the threshold in the Code node from `daysRunning < 14` to `daysRunning < 7` for newer brands. |
+| **Gemini video error** | Ad MP4 file was corrupted or exceeds size limits. | Ensure the video download node has a 120s timeout and sufficient memory. |
+| **Telegram message truncated** | Analysis text exceeded 4,096 characters. | The Code node automatically safely truncates at 3,990 characters to avoid delivery failures. |
 
-**Video generation fails with "Invalid Image URL".**
-Make sure your image host returns the direct file URL (ending in `.jpg`, `.png` or `.webp`), not an HTML viewer page.
-
-**How do I change the aspect ratio or video length?**
-This workflow is set to 9:16 and 8 seconds. Change the defaults in the Director prompt and schema, then check Google's Veo documentation for the lengths and ratios your chosen model supports.
-
-**Veo polling times out or returns a 429 error.**
-Keep the `Wait` interval at 10 seconds or more and cap `max_attempts` at 12 to 15. For 429 errors, check your Google AI Studio or Vertex AI quota for the Veo model you use.
-
-**Can I use a different AI model for the Director step?**
-The Director is a normal n8n step that must return strict JSON, so another LLM with JSON output can replace it. This has not been tested here. The image editing and video steps still use Google models.
+---
 
 ## Roadmap
 
-- [ ] **3-hook split-test batching:** generate three different 5-second hook angles (contrarian, shock reaction, text-overlay point) from one approved frame.
-- [ ] **Competitor ad research:** connect an Apify Meta Ad Library scraper to copy the structure of winning competitor hooks.
-- [ ] **Auto-captions:** pass the rendered MP4 through a subtitle webhook for animated word-by-word captions.
+- [x] Facebook Ad Library scraper via Apify
+- [x] Automated 14+ day winner filter
+- [x] Multimodal video hook & psychology extraction with Gemini
+- [x] 3 cloned UGC script variations delivered to Telegram
+- [ ] **AI Video Generation Integration:** Route cloned scripts into Google Veo 3 / HeyGen / ElevenLabs to auto-generate draft UGC test ads.
+- [ ] **TikTok Creative Center Integration:** Scrape top trending TikTok video ads alongside Meta.
+- [ ] **Airtable / Google Sheets Sync:** Automatically log competitor intelligence and scripts into a shared creative swipe file.
 
-## Learn more
-
-- [n8n documentation](https://docs.n8n.io/)
-- [Gemini API deprecations and model replacements](https://ai.google.dev/gemini-api/docs/deprecations)
-- [Telegram Bot API](https://core.telegram.org/bots/api)
+---
 
 ## Author
 
-Built by [TechGenDM](https://github.com/TechGenDM). Questions and ideas are welcome in [GitHub Issues](https://github.com/TechGenDM/Video-Generation-With-Gemini/issues).
+Built by [TechGenDM](https://github.com/TechGenDM). Issues and feature requests are welcome via [GitHub Issues](https://github.com/TechGenDM/Video-Generation-With-Gemini/issues).
 
-If this workflow helps you, please star the repo.
+If this automation helps you scale your ad creative workflow, please give this repository a ⭐!
+
+---
 
 ## License
 
-Released under the [MIT License](https://opensource.org/licenses/MIT). You can use and adapt it in personal and commercial automation projects.
+Distributed under the [MIT License](https://opensource.org/licenses/MIT). You are free to adapt and use this workflow for personal and commercial automation projects.
+
+---
 
 ## Keywords
 
-AI UGC video generator, AI video ad generator, UGC ad automation, n8n workflow template, n8n AI agent, Google Veo 3.1 API, Veo 3 image-to-video, Gemini image editing (Nano Banana), Telegram bot video generator, human-in-the-loop AI workflow, 9:16 vertical video ads, TikTok ad creative automation, Meta Reels ad hooks, YouTube Shorts automation, DTC ad creative testing, AI video with native audio, text-to-video and image-to-video automation, no-code video ad automation, AI creative strategist tool, UGC hook testing, ad hook generator.
-
-**Related searches:** how to make AI UGC ads with n8n · Veo 3.1 n8n workflow · Nano Banana + Veo workflow · Telegram bot approval workflow for AI video · automate TikTok ad creatives · AI UGC ads for e-commerce · free n8n UGC template
+competitor ad spy n8n workflow, meta ad library scraper, facebook ads scraper apify, gemini video ai analysis, ugc script generator, direct response creative strategy, paid social ad hooks, n8n telegram bot automation, 3-second hook analysis, ugc video ad cloner, dtc creative research tool, ai media buyer workflow, viral ad breakdown, performance marketing automation.
