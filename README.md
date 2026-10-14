@@ -69,7 +69,7 @@ sequenceDiagram
     participant N8N as n8n Orchestrator
     participant Apify as Apify (Meta Ads Scraper)
     participant Code as Filter Node (14+ Days)
-    participant Loop as Split in Batches
+    participant Batch as Loop Over Items
     participant VideoCDN as Ad Video Stream
     participant Gemini as Google Gemini (Video AI)
 
@@ -79,15 +79,15 @@ sequenceDiagram
     Apify-->>N8N: 200 OK (Dataset items with video URLs & start dates)
     N8N->>Code: Filter for videoUrl & days_running >= 14
     Code-->>N8N: Top 3 longest running ads sorted descending
-    N8N->>Loop: Initialize item loop (1 ad at a time)
+    N8N->>Batch: Initialize item loop (1 ad at a time)
     
     rect rgb(240, 248, 255)
-        note over Loop,Gemini: Processing Each Winning Ad
-        Loop->>VideoCDN: GET video_url (Download MP4 binary)
-        VideoCDN-->>Loop: Stream MP4 binary file
-        Loop->>Gemini: Analyze video binary (Prompt: 3s hook, visual, psychology, 3 scripts)
-        Gemini-->>Loop: Strict JSON intelligence payload
-        Loop->>TG: Send formatted HTML message + ad link + 3 cloned scripts
+        note over Batch,Gemini: Processing Each Winning Ad
+        Batch->>VideoCDN: GET video_url (Download MP4 binary)
+        VideoCDN-->>Batch: Stream MP4 binary file
+        Batch->>Gemini: Analyze video binary (Prompt: 3s hook, visual, psychology, 3 scripts)
+        Gemini-->>Batch: Strict JSON intelligence payload
+        Batch->>TG: Send formatted HTML message + ad link + 3 cloned scripts
         TG-->>User: Telegram Intelligence Notification
     end
 ```
