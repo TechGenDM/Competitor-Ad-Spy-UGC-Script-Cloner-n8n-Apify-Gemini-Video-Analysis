@@ -1,0 +1,277 @@
+{
+  "name": "Competitor Ad Spy & Script Cloner",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "4a921ab0-128e-4ac9-8a97-9e46fa5a0e20",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        80
+      ],
+      "webhookId": "146a96f4-d35c-4d6a-b858-4135f17bdedb",
+      "credentials": {
+        "telegramApi": {
+          "id": "sEu3Qz8RIfLGZ6VI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/apify~facebook-ads-scraper/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"startUrls\": [{\"url\": \"{{ $json.message.text }}\"}], \"resultsLimit\": 30, \"activeStatus\": \"active\"}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "2e57293f-d305-4f21-aede-d8a55f6943e0",
+      "name": "Scrape Meta Ads via Apify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        80
+      ],
+      "credentials": {
+        "httpTemplatedCustomAuth": {
+          "id": "G7r41n2ZoiRSYT3Y",
+          "name": "Apify API Token (Devasish M)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = Date.now();\nconst DAY = 24 * 60 * 60 * 1000;\nconst results = [];\nfor (const item of $input.all()) {\n  const ad = item.json;\n  const snap = ad.snapshot || {};\n  const pick = (o) => o && (o.videoHdUrl || o.videoSdUrl || o.video_hd_url || o.video_sd_url);\n  let videoUrl = '';\n  let card = null;\n  for (const v of (snap.videos || [])) { const u = pick(v); if (u) { videoUrl = u; break; } }\n  if (!videoUrl) {\n    for (const c of (snap.cards || [])) { const u = pick(c); if (u) { videoUrl = u; card = c; break; } }\n  }\n  if (!videoUrl) continue;\n  let ts = null;\n  if (typeof ad.startDate === 'number') ts = ad.startDate;\n  else if (ad.startDate && /^\\d+$/.test(String(ad.startDate))) ts = Number(ad.startDate);\n  else if (ad.startDateFormatted) ts = Date.parse(ad.startDateFormatted);\n  if (ts === null || !isFinite(ts)) continue;\n  if (ts < 1e11) ts = ts * 1000;\n  const daysRunning = Math.floor((now - ts) / DAY);\n  if (daysRunning < 14) continue;\n  const isTemplate = (s) => typeof s === 'string' && s.includes('{{');\n  const bodyText = snap.body && typeof snap.body === 'object' ? snap.body.text : snap.body;\n  const adCopy = (card && card.body) || (!isTemplate(bodyText) && bodyText) || snap.caption || '';\n  results.push({\n    ad_id: ad.adArchiveID || ad.adArchiveId || '',\n    page_name: snap.pageName || ad.pageName || '',\n    days_running: daysRunning,\n    ad_copy: adCopy,\n    video_url: videoUrl,\n  });\n}\nresults.sort((a, b) => b.days_running - a.days_running);\nreturn results.slice(0, 3).map(r => ({ json: r }));"
+      },
+      "id": "f6076c02-d0c9-4113-bc93-d95198e5cc38",
+      "name": "Filter 14+ Day Video Winners",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.video_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 120000
+        }
+      },
+      "id": "3b254095-044a-4ff3-a2e3-218020a7fc3e",
+      "name": "Download Ad MP4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "models/gemini-3-flash-preview"
+        },
+        "text": "Analyze this winning competitor video ad. Return strict JSON with: 1) spoken_hook_first_3s, 2) visual_hook_description, 3) psychological_angle, and 4) three cloned 20-second UGC video script variations (with [visual cues] and on-screen text hooks).",
+        "inputType": "binary",
+        "options": {
+          "maxOutputTokens": 8192
+        }
+      },
+      "id": "a1e48c98-f695-4b22-87cf-c73d56c59bac",
+      "name": "Analyze Video with Gemini",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        0
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WNCJAh3blke7t8vu",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const ad = $('Loop Over Items').item.json;\nlet raw = $json.content?.parts?.[0]?.text ?? $json.text ?? $json.output ?? '';\nlet data = null;\nif (raw && typeof raw === 'object') {\n  data = raw;\n} else {\n  let s = String(raw).trim();\n  s = s.replace(/^\\s*```(?:json)?\\s*/i, '').replace(/\\s*```\\s*$/, '');\n  try { data = JSON.parse(s); } catch (e) { data = null; }\n}\nconst fmt = (v) => {\n  if (v === null || v === undefined) return '';\n  if (typeof v === 'string') return v;\n  if (Array.isArray(v)) return v.map(fmt).join('\\n');\n  if (typeof v === 'object') return Object.entries(v).map(([k, val]) => k.replace(/_/g, ' ') + ': ' + fmt(val)).join('\\n');\n  return String(v);\n};\nconst esc = (t) => String(t === null || t === undefined ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst b = (t) => '<b>' + esc(t) + '</b>';\nconst lines = [\n  b('Competitor Name:') + ' ' + esc(ad.page_name),\n  b('Days Running:') + ' ' + esc(ad.days_running),\n  '<a href=\"' + String(ad.video_url).replace(/&/g, '&amp;').replace(/\"/g, '&quot;') + '\">▶️ Watch Winning Ad MP4</a>',\n  ''\n];\nif (data) {\n  const scriptsKey = Object.keys(data).find((k) => /(clone|script)/i.test(k) && !/description/i.test(k)) || Object.keys(data).find((k) => Array.isArray(data[k]));\n  lines.push(b('3s Hook:') + ' ' + esc(fmt(data.spoken_hook_first_3s)));\n  if (data.visual_hook_description) lines.push(b('Visual Hook:') + ' ' + esc(fmt(data.visual_hook_description)));\n  lines.push('', b('Psychological Angle:') + ' ' + esc(fmt(data.psychological_angle)), '', b('Cloned Scripts:'));\n  let scripts = scriptsKey ? data[scriptsKey] : [];\n  if (!Array.isArray(scripts)) scripts = scripts && typeof scripts === 'object' ? Object.values(scripts) : [scripts];\n  scripts.forEach((sc, i) => { lines.push('', b('Script ' + (i + 1) + ':'), esc(fmt(sc))); });\n} else {\n  lines.push(b('Gemini analysis (could not parse as JSON):'), esc(String(raw)));\n}\nlet message = lines.join('\\n');\n\nif (message.length > 4000) {\n  message = message.slice(0, 3990).replace(/<[^>]*$/, '').replace(/&[^;\\s]*$/, '') + '...';\n}\nreturn { json: { message } };"
+      },
+      "id": "646aa7b2-fa47-419a-8c26-de492e5971ae",
+      "name": "Format Telegram Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "9f0e4e19-ddd5-4b10-84f1-2b356a3a1956",
+      "name": "Send Analysis to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1344,
+        80
+      ],
+      "webhookId": "bc55efc6-410f-435b-8b0d-5c3bfae51a5e",
+      "credentials": {
+        "telegramApi": {
+          "id": "sEu3Qz8RIfLGZ6VI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3a3eca79-e28f-4566-90a2-951de498a25d",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        672,
+        80
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Scrape Meta Ads via Apify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Meta Ads via Apify": {
+      "main": [
+        [
+          {
+            "node": "Filter 14+ Day Video Winners",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter 14+ Day Video Winners": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Ad MP4": {
+      "main": [
+        [
+          {
+            "node": "Analyze Video with Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Video with Gemini": {
+      "main": [
+        [
+          {
+            "node": "Format Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Send Analysis to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Analysis to Telegram": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Download Ad MP4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "e04e33b0-fd40-425a-933a-170830257f3c",
+  "meta": {
+    "instanceId": "8e0e5c3d7b2c0da0907e652a81e9574c357650f4cbc6c3d62827f59e3773c6a3"
+  },
+  "nodeGroups": [],
+  "id": "FmZFgtRLDRMKr1Xg",
+  "tags": []
+}
