@@ -1,50 +1,52 @@
-# 🎬 UGC Video Creation Pipeline with Gemini & n8n
+# 🎬 AI Paid-Social UGC Hook & Video Pipeline (n8n + Gemini Veo 3)
 
 [![n8n Workflow Automation](https://img.shields.io/badge/n8n-Workflow%20Automation-EA4B71?logo=n8n&logoColor=white)](https://n8n.io/)
-[![Google Gemini Video](https://img.shields.io/badge/Google%20Gemini-v3%20Video%20Generation-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
-[![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20Trigger-24A1DE?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
-[![Nano Banana API](https://img.shields.io/badge/Nano%20Banana-AI%20Image%20Editor-FFD700?logo=image&logoColor=black)](https://nanobanana.com/)
+[![Google Veo 3](https://img.shields.io/badge/Google%20Gemini-Veo%203%20Video-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Gemini 2.5 Flash Image](https://img.shields.io/badge/Gemini%202.5%20Flash-Nano%20Banana%20Image-FFD700?logo=google&logoColor=black)](https://ai.google.dev/)
+[![Telegram Bot API](https://img.shields.io/badge/Telegram-HITL%20Trigger-24A1DE?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-An end-to-end autonomous UGC (User-Generated Content) video generation pipeline built with **n8n**, **Telegram**, **Nano Banana API**, and **Google Gemini Video (v3)**. 
+An autonomous, Human-in-the-Loop (HITL) paid-social video hook and B-roll generation pipeline built with **n8n**, **Telegram**, **Gemini 2.5 Flash Image (Nano Banana)**, and **Google Veo 3 (`veo-3.0-generate-preview`)**.
 
-This system integrates an interactive human-in-the-loop image refinement feedback loop, automatic cloud asset hosting, and an **AI UGC Video Director Agent** that transforms raw visual assets and conversational feedback into broadcast-ready, mobile-first (`9:16`) short-form video ads.
+Built for **DTC Paid Social Agencies and E-Commerce Media Buyers**, this pipeline solves two major bottlenecks in ad creative testing: **high video API burn rates** and **slow creator turnaround times**. By locking visual composition through cheap interactive image iterations in Telegram before triggering expensive video renders, teams cut wasted video generation spend by ~70% while producing mobile-first (`9:16`) video hooks with native synchronized audio in under 2 minutes.
 
 ---
 
 ## 📌 Table of Contents
 
-- [Overview](#-overview)
+- [Overview & Target Use Case](#-overview--target-use-case)
 - [Architecture & System Flow](#-architecture--system-flow)
-- [Key Features](#-key-features)
+- [Key Engineering Features](#-key-engineering-features)
 - [Workflow Pipeline Breakdown](#-workflow-pipeline-breakdown)
   - [1. Telegram Ingestion & Session Handling](#1-telegram-ingestion--session-handling)
-  - [2. Nano Banana Image Editing & Interactive Feedback Loop](#2-nano-banana-image-editing--interactive-feedback-loop)
+  - [2. Gemini 2.5 Flash Image ("Nano Banana") HITL Loop](#2-gemini-25-flash-image-nano-banana-hitl-loop)
   - [3. Asset Hosting & URL Conversion](#3-asset-hosting--url-conversion)
-  - [4. AI Video Director Agent](#4-ai-video-director-agent)
-  - [5. Gemini v3 Video Generation Engine](#5-gemini-v3-video-generation-engine)
+  - [4. AI Paid-Social Director Agent](#4-ai-paid-social-director-agent)
+  - [5. Google Veo 3 Video & Native Audio Synthesis](#5-google-veo-3-video--native-audio-synthesis)
   - [6. Result Delivery & Telegram Dispatch](#6-result-delivery--telegram-dispatch)
 - [AI Director Agent Prompt & JSON Schema](#-ai-director-agent-prompt--json-schema)
 - [Prerequisites & Environment Configuration](#-prerequisites--environment-configuration)
 - [Setup & Deployment Guide](#-setup--deployment-guide)
 - [Engineering Best Practices & Gotchas](#-engineering-best-practices--gotchas)
-- [Example Scenario: Cowboy Lifestyle UGC Ad](#-example-scenario-cowboy-lifestyle-ugc-ad)
+- [Example Scenario: Cowboy Lifestyle UGC Hook](#-example-scenario-cowboy-lifestyle-ugc-hook)
 - [Troubleshooting & FAQs](#-troubleshooting--faqs)
 - [Roadmap & Enhancements](#-roadmap--enhancements)
 - [License](#-license)
 
 ---
 
-## 🚀 Overview
+## 🚀 Overview & Target Use Case
 
-Creating high-performing UGC video ads traditionally requires coordinating designers, prompt engineers, and video editors. This pipeline automates the entire lifecycle through a single messaging interface:
+In paid social (Meta Reels, TikTok, YouTube Shorts), **Thumb-Stop Rate (3-second view-through)** determines campaign profitability. Waiting 7 days and paying $150–$300 per creator video makes rapid hook testing slow and expensive, while blind text-to-video prompting burns API credits on unusable frames.
 
-1. **Telegram Trigger**: A creator or client uploads a reference image or selfie along with a creative concept.
-2. **AI Image Polish & Revision Loop**: The image is routed to **Nano Banana** for targeted AI image transformations. The system returns the edit to Telegram, allowing the user to request tweaks or approve the asset.
-3. **Direct URL Resolution**: Once approved, the binary/Base64 image is uploaded to a high-speed hosting provider (e.g., ImgBB / S3) to produce a secure, publicly accessible CDN URL.
-4. **AI Director Synthesis**: An autonomous LLM agent acts as a UGC Video Director, analyzing the image semantics and creative brief to synthesize precise cinematic instructions.
-5. **Gemini v3 Video Synthesis**: Google Gemini's advanced video model generates an ultra-realistic 8-second vertical (`9:16`) video.
-6. **Delivery**: The synthesized video is returned directly to Telegram for immediate publication or ad distribution.
+This pipeline automates the creative testing workflow through a single Telegram interface:
+
+1. **Telegram Trigger**: A media buyer or creative strategist uploads a reference image or product/lifestyle shot with a creative angle.
+2. **HITL Frame-Lock (Nano Banana / Gemini 2.5 Flash Image)**: The image is routed to Gemini's native image editing model for targeted visual adjustments. The preview returns to Telegram with interactive approval buttons—allowing unlimited low-cost image tweaks before spending video credits.
+3. **Direct CDN Resolution**: Once approved, the binary/Base64 frame is uploaded to a high-speed CDN (ImgBB / S3) to keep n8n's execution database lightweight.
+4. **AI Director Synthesis**: An LLM agent acts as a Direct-Response Video Director, converting the approved starter frame and brief into a structured JSON payload with camera movement, pacing, and native audio cues.
+5. **Veo 3 Video + Audio Generation**: Google's Veo 3 model renders a high-realism, 8-second `9:16` vertical video complete with synchronized ambient audio and spoken dialogue.
+6. **Instant Delivery**: The finished MP4 is pushed back to Telegram ready for split-testing in Meta Ads Manager or CapCut.
 
 ---
 
@@ -53,117 +55,118 @@ Creating high-performing UGC video ads traditionally requires coordinating desig
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as User / Creator (Telegram)
+    actor User as Media Buyer (Telegram)
     participant TG as Telegram Bot Node
     participant N8N as n8n Orchestrator
-    participant NB as Nano Banana API
+    participant NB as Gemini 2.5 Flash Image (Nano Banana)
     participant CDN as Image Host (ImgBB / S3)
-    participant Agent as AI Director Agent (Gemini)
-    participant VideoAPI as Gemini v3 Video API
+    participant Agent as AI Director Agent (Gemini 2.5 Pro)
+    participant VideoAPI as Google Veo 3 Video API
 
-    User->>TG: Send raw image + creative instructions
-    TG->>N8N: Extract metadata & binary file path
-    N8N->>NB: POST /edit (Raw image + edit instructions)
-    NB-->>N8N: 200 OK (Base64 edited image)
-    N8N->>TG: Send edited preview + "Approve or Request Edits"
+    User->>TG: Send raw reference photo + hook concept
+    TG->>N8N: Extract metadata & binary file stream
+    N8N->>NB: POST :generateContent (Image + edit instructions)
+    NB-->>N8N: 200 OK (Base64 edited frame)
+    N8N->>TG: Send edited preview + [Approve] / [Request Edits]
     
     rect rgb(240, 248, 255)
-        note right of User: Interactive Refinement Loop
+        note right of User: Human-in-the-Loop (HITL) Frame Lock
         alt User requests revisions
-            User->>TG: "Make lighting warmer, zoom in on face"
-            TG->>N8N: Iteration prompt
-            N8N->>NB: POST /edit (Previous image + revision delta)
-            NB-->>N8N: Updated Base64 image
+            User->>TG: "Make lighting warmer, tighten crop on face"
+            TG->>N8N: Revision delta prompt
+            N8N->>NB: POST :generateContent (Previous frame + delta)
+            NB-->>N8N: Updated Base64 frame
             N8N->>TG: Updated preview
-        else User approves
-            User->>TG: "Approved! Generate video"
+        else User approves frame
+            User->>TG: Clicks "✅ Approve & Render Video"
         end
     end
 
-    N8N->>CDN: POST /upload (Base64 to permanent hosted URL)
-    CDN-->>N8N: Return public image URL
-    N8N->>Agent: Prompt: [Image URL + Creative Brief + UGC Style Rules]
-    Agent-->>N8N: Structured JSON payload (model, aspect_ratio, prompt, camera motion)
-    N8N->>VideoAPI: POST /videos:generate (Gemini v3 payload)
+    N8N->>CDN: POST /upload (Convert Base64 to public HTTPS URL)
+    CDN-->>N8N: Return immutable CDN image_url
+    N8N->>Agent: Prompt: [Image URL + Hook Brief + Direct-Response Rules]
+    Agent-->>N8N: Strict JSON payload (prompt, audio cues, aspect_ratio)
+    N8N->>VideoAPI: POST /models/veo-3.0-generate-preview:predictLongRunning
     
-    alt Asynchronous Webhook Callback
-        VideoAPI-->>N8N: 202 Accepted (Job ID & Webhook Callback)
-        VideoAPI->>N8N: Webhook Trigger: Video Ready (video_url / download link)
-    else Synchronous / Polling
-        VideoAPI-->>N8N: Status Polling until status=COMPLETED
+    alt Asynchronous Polling / Callback
+        VideoAPI-->>N8N: Operation ID returned
+        N8N->>VideoAPI: Poll GET /operations/{id} until done=true
     end
 
-    N8N->>TG: Send final generated MP4 video to user
-    TG-->>User: Delivers mobile-optimized UGC Video
+    N8N->>TG: Dispatch rendered 9:16 MP4 with native audio
+    TG-->>User: Delivers ad-ready UGC hook variation
 ```
 
 ---
 
-## ✨ Key Features
+## ✨ Key Engineering Features
 
-- **📱 Mobile-First Native UGC**: Tailored for TikTok, Instagram Reels, and YouTube Shorts with native `9:16` vertical aspect ratio.
-- **🔄 Interactive Human-in-the-Loop (HITL)**: Users can guide image generation and retouching iteratively through Telegram before expending video generation credits.
-- **🧠 Director-Grade AI Agent**: An intelligent agent translates conversational, loose user prompts into hyper-detailed camera movements, lighting instructions, and temporal action prompts.
-- **⚡ Lightweight Data Pipelines**: Eliminates n8n execution bloat by converting in-memory binary blobs and Base64 strings to CDN-hosted URLs immediately before video synthesis.
-- **🛡 Enterprise Resilience**: Built-in fallback parameters, asynchronous callback webhooks, and rate-limit guardrails.
+* **💰 Cost-Controlled HITL Gate**: Prevents wasted $0.35–$0.50+ video renders by locking lighting, wardrobe, and framing at the image stage (~$0.03/edit) via Telegram inline keyboards.
+* **📱 Native `9:16` Vertical Output**: Engineered specifically for Meta Reels, TikTok, and YouTube Shorts placements with native spoken hooks and ambient sound design via Veo 3.
+* **⚡ Zero-Bloat Binary Management**: Eliminates n8n PostgreSQL/SQLite execution bloat by offloading Base64 blobs to external CDN storage before entering asynchronous polling loops.
+* **🧠 Deterministic JSON Agent**: Enforces `responseMimeType: "application/json"` on the Director Agent so downstream HTTP payloads never fail due to markdown wrapper hallucinations.
 
 ---
 
-## ⚙️ Workflow Pipeline Breakdown
+## ⚙ Workflow Pipeline Breakdown
 
 ### 1. Telegram Ingestion & Session Handling
-- **Trigger**: Telegram Trigger Node listening for incoming photos and text messages (`/start`, `/edit`, or photo uploads).
-- **Metadata Extraction**: Extracts `file_id`, `chat_id`, `user_id`, caption, and timestamps.
-- **File Retrieval**: Leverages Telegram's `getFile` endpoint to download the raw binary asset into n8n's transient execution storage.
 
-### 2. Nano Banana Image Editing & Interactive Feedback Loop
-- **Official API Integration**: Sends the raw image binary to the official Nano Banana endpoint for stylized modifications, character consistency, or aesthetic corrections.
-- **Payload Parsing**: Nano Banana returns the modified asset as a Base64-encoded string.
-- **Conversion Utility**: A dedicated n8n Function / Code node converts the Base64 stream into a standard binary file object.
-- **Telegram Interactive Prompt**: Dispatches the revised image back to the Telegram chat with inline keyboard buttons (`✅ Approve & Render Video`, `✏️ Request Further Edits`).
-- **Loop Controller**: Evaluates user response state; routes back to Nano Banana on edit requests, or advances to CDN upload upon approval.
+* **Trigger**: Telegram Trigger Node listening for incoming photo uploads and callback queries (`message`, `callback_query`).
+* **Metadata Extraction**: Extracts `file_id`, `chat_id`, `user_id`, and caption instructions.
+* **File Retrieval**: Calls Telegram's `getFile` endpoint to pull the raw binary asset into n8n's transient memory.
+
+### 2. Gemini 2.5 Flash Image ("Nano Banana") HITL Loop
+
+* **API Integration**: Sends the inline Base64 image and revision prompt to Google's `gemini-2.5-flash-image-preview` endpoint for character-consistent styling, background replacement, or lighting edits.
+* **Conversion Utility**: A dedicated n8n **Code Node** converts the returned `inlineData.data` Base64 string back into an n8n binary buffer.
+* **Telegram Interactive Prompt**: Dispatches the edited frame to Telegram with inline buttons (`✅ Approve & Render Video`, `✏️ Request Further Edits`).
+* **Loop Controller**: Routes edit requests back into the image model with conversational memory, or advances approved frames to CDN upload.
 
 ### 3. Asset Hosting & URL Conversion
-- **Why It Matters**: Downstream video generation models (like Gemini v3) require accessible HTTP/HTTPS URLs rather than megabytes of inline Base64 data. Storing raw Base64 in n8n execution history also degrades database performance.
-- **Hosting Node**: Employs an HTTP Request node targeting an external media API (e.g., ImgBB, Cloudinary, AWS S3, or Google Cloud Storage).
-- **Output**: Returns an immutable, public asset URL (e.g., `https://i.ibb.co/xyz/final-frame.png`).
 
-### 4. AI Video Director Agent
-- **Role**: Functions as a virtual UGC Creative Director.
-- **Input Context**: Takes the reference image description, user creative prompt, target duration (8 seconds), and formatting constraints.
-- **Processing**: Synthesizes prompt text incorporating realistic human micro-expressions, dynamic camera movements (e.g., handheld jitter, subtle pan, push-in), and natural ambient lighting.
-- **Output**: Enforces strict JSON adherence without markdown fluff, preventing downstream parsing failures.
+* **Why It Matters**: Passing multi-megabyte Base64 strings across asynchronous `Wait` and polling nodes spikes RAM usage and slows down n8n execution history.
+* **Hosting Node**: Uploads the approved binary to ImgBB, Cloudinary, or AWS S3 and outputs a lightweight HTTPS URL (`https://i.ibb.co/xyz/approved-frame.jpg`).
 
-### 5. Gemini v3 Video Generation Engine
-- **Model**: Google Gemini Video v3 (`veo-3` / `gemini-video-v3`).
-- **Input Parameters**:
-  - `prompt`: Expanded cinematic instruction from the Director Agent.
-  - `image_url`: Approved reference image from the CDN.
-  - `aspect_ratio`: `9:16` (portrait) or `16:9` (landscape).
-  - `duration_seconds`: 8 seconds (optimized for UGC hook retention).
-  - `enable_fallback`: `true` (enables automatic fallback to standard latency models if high-throughput channels are congested).
-- **Job Handling**: Supports both asynchronous webhook callback registrations and resilient status-polling mechanisms.
+### 4. AI Paid-Social Director Agent
+
+* **Role**: Acts as a Direct-Response Paid Social Creative Director.
+* **Input Context**: Combines the approved reference frame, user hook concept, target duration (8 seconds), and Veo 3 audio/visual syntax rules.
+* **Output**: Produces a strict JSON specification detailing first-3-second thumb-stop motion, handheld camera physics, ambient audio, and spoken dialogue.
+
+### 5. Google Veo 3 Video & Native Audio Synthesis
+
+* **Model**: Google Veo 3 (`veo-3.0-generate-preview` / `veo-3.0-fast-generate-preview`).
+* **Input Parameters**:
+  * `prompt`: Expanded cinematic + audio instruction from the Director Agent.
+  * `image`: Approved starter frame passed via URL or binary reference.
+  * `aspectRatio`: `"9:16"` (portrait) or `"16:9"` (landscape).
+  * `durationSeconds`: `8` (optimized for paid-social hook retention).
+  * `generateAudio`: `true` (synthesizes native speech and environmental sound effects).
+* **Async Operation Handling**: Uses n8n's `Wait` + `IF` loop to poll the long-running operation endpoint every 10 seconds until `done: true`.
 
 ### 6. Result Delivery & Telegram Dispatch
-- Downloads the rendered video stream or passes the signed video download URL directly to the Telegram Send Video node (`sendVideo`).
-- Accompanies the video with execution stats (generation time, model used, prompt summary).
+
+* Fetches the signed video URI from the completed operation response and sends the MP4 directly to the user's Telegram chat via the `sendVideo` operation alongside the prompt breakdown.
 
 ---
 
 ## 🧠 AI Director Agent Prompt & JSON Schema
 
-The workflow uses an autonomous AI agent configured with the following system instructions:
+The workflow configures Gemini 2.5 Pro with `responseMimeType: "application/json"` and the following system prompt:
 
 ### System Prompt
+
 ```text
-You are the "v3 fast UGC video generator" and Lead AI Video Director.
-Your task is to craft high-conversion, hyper-realistic, eight-second mobile-first UGC video prompts based on a provided reference image and user concept.
+You are a Lead Direct-Response UGC Video Director optimizing for Meta and TikTok 3-second Thumb-Stop Rate.
+Transform the user's creative concept and reference image into a hyper-realistic, 8-second mobile-first (9:16) video generation payload for Google Veo 3.
 
 Rules:
-1. Always optimize for mobile vertical viewing (9:16 portrait).
-2. Ground all visual action in the provided reference image context to ensure visual continuity.
-3. Include realistic UGC sensory details: natural ambient lighting, subtle handheld camera wobble, authentic eye line, and realistic human pacing.
-4. Output must strictly conform to the JSON schema below. Do not wrap in markdown backticks or include conversational conversational filler.
+1. Always optimize for vertical mobile viewing (9:16 portrait).
+2. Ground all initial visual action in the provided reference image to guarantee frame-1 continuity.
+3. Engineer the first 2.5 seconds for maximum scroll-stopping motion (e.g., expressive micro-reaction, stepping into frame, handheld camera push-in).
+4. Include explicit native audio cues in the prompt: specify natural ambient background sound and exact spoken dialogue in quotes if applicable.
+5. Output strictly valid JSON matching the schema below with zero markdown wrappers.
 ```
 
 ### JSON Schema Output Specification
@@ -171,50 +174,51 @@ Rules:
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "GeminiVideoGenerationPayload",
+  "title": "Veo3VideoGenerationPayload",
   "type": "object",
   "properties": {
     "model": {
       "type": "string",
-      "enum": ["gemini-video-v3-fast", "gemini-video-v3-pro"],
-      "default": "gemini-video-v3-fast"
+      "enum": ["veo-3.0-fast-generate-preview", "veo-3.0-generate-preview"],
+      "default": "veo-3.0-fast-generate-preview"
     },
     "aspect_ratio": {
       "type": "string",
-      "enum": ["9:16", "16:9", "1:1"],
+      "enum": ["9:16", "16:9"],
       "default": "9:16"
     },
     "duration_seconds": {
       "type": "integer",
-      "enum": [5, 8, 10],
+      "enum": [5, 8],
       "default": 8
     },
-    "enable_fallback": {
+    "generate_audio": {
       "type": "boolean",
       "default": true
     },
     "prompt": {
       "type": "string",
-      "description": "High-fidelity cinematic UGC prompt describing action, camera motion, lighting, and performance."
+      "description": "High-fidelity UGC video prompt describing 0-3s visual hook, camera motion, lighting, ambient audio, and spoken dialogue."
     },
     "image_url": {
       "type": "string",
       "format": "uri",
-      "description": "Direct public HTTPS URL of the approved reference image."
+      "description": "Direct public HTTPS URL of the approved starter frame."
     }
   },
-  "required": ["model", "aspect_ratio", "duration_seconds", "enable_fallback", "prompt", "image_url"]
+  "required": ["model", "aspect_ratio", "duration_seconds", "generate_audio", "prompt", "image_url"]
 }
 ```
 
 ### Example Generated Output
+
 ```json
 {
-  "model": "gemini-video-v3-fast",
+  "model": "veo-3.0-fast-generate-preview",
   "aspect_ratio": "9:16",
   "duration_seconds": 8,
-  "enable_fallback": true,
-  "prompt": "Authentic UGC smartphone selfie video. A rugged cowboy in worn denim and a weather-beaten Stetson hat smiles confidently into the front-facing camera on a sun-drenched ranch in Montana. Golden hour dust particles float in the warm backlight. Handheld subtle camera motion with natural micro-shakes. He adjusts his collar and speaks directly into the camera with natural charismatic expressions. High realism, 4k quality, natural shutter motion.",
+  "generate_audio": true,
+  "prompt": "Authentic UGC smartphone selfie video on a sun-drenched Montana ranch at golden hour. In the first 2 seconds, a rugged cowboy in worn denim and a Stetson hat tilts his hat up and leans slightly toward the front-facing lens with a charismatic smirk. Subtle handheld smartphone camera wobble with warm sunset lens flare and floating dust motes. Audio: gentle dry wind rustling across open pasture, leather creaking softly, and the man speaking clearly in a warm gravelly voice: 'Most folks get out-of-state ranch work completely wrong.'",
   "image_url": "https://i.ibb.co/wN1K9Xp/cowboy-approved-frame.jpg"
 }
 ```
@@ -224,33 +228,28 @@ Rules:
 ## 📋 Prerequisites & Environment Configuration
 
 ### Required Accounts & Services
-- **n8n**: Self-hosted (Docker / npm) or n8n Cloud (version `1.30.0` or higher recommended).
-- **Telegram Bot**: Created via [@BotFather](https://t.me/BotFather) with API Token.
-- **Nano Banana API**: Valid API Key with image edit permissions.
-- **Image Hosting Service**: ImgBB API key, Cloudinary account, or AWS S3 bucket credentials.
-- **Google AI / Gemini API**: Google AI Studio API key or Google Cloud Vertex AI project access with Gemini Video (v3) enabled.
+
+* **n8n**: Self-hosted (Docker / npm) or n8n Cloud (`v1.50.0+` recommended).
+* **Telegram Bot**: Created via [@BotFather](https://t.me/BotFather) with an active API Token.
+* **Google AI Studio / Vertex AI API Key**: Paid-tier project with access to `gemini-2.5-flash-image-preview` (Nano Banana), `gemini-2.5-pro`, and `veo-3.0-generate-preview`.
+* **Image Hosting Service**: ImgBB API key, Cloudinary, or AWS S3 bucket.
 
 ### Environment Variables (`.env`)
-Create a `.env` file or define these variables within your n8n environment settings:
+
+Define these variables in your `.env` file or n8n environment configuration:
 
 ```env
 # Telegram Configuration
 TELEGRAM_BOT_TOKEN=7891234567:AAFnYourTelegramBotTokenHere
 
-# Nano Banana API Configuration
-NANO_BANANA_API_KEY=nb_live_xxxxxxxxxxxxxxxxxxxxxx
-NANO_BANANA_BASE_URL=https://api.nanobanana.com/v1
+# Google Gemini & Veo 3 Configuration (Google AI Studio)
+GEMINI_API_KEY=AIzaSyYourGeminiApiKeyHere
+GEMINI_IMAGE_ENDPOINT=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent
+GEMINI_VEO_ENDPOINT=https://generativelanguage.googleapis.com/v1beta/models/veo-3.0-fast-generate-preview:predictLongRunning
 
 # Image Hosting Configuration (e.g., ImgBB)
-IMAGE_HOST_API_KEY=your_imgbb_or_host_api_key
+IMAGE_HOST_API_KEY=your_imgbb_api_key_here
 IMAGE_HOST_UPLOAD_URL=https://api.imgbb.com/1/upload
-
-# Google Gemini / AI Studio Video Configuration
-GEMINI_API_KEY=AIzaSyYourGeminiApiKeyHere
-GEMINI_VIDEO_ENDPOINT=https://generativelanguage.googleapis.com/v1beta/models/gemini-video-v3:generateVideo
-
-# Webhook Callback Configuration (if running asynchronously)
-N8N_WEBHOOK_BASE_URL=https://n8n.yourdomain.com/webhook
 ```
 
 ---
@@ -258,126 +257,126 @@ N8N_WEBHOOK_BASE_URL=https://n8n.yourdomain.com/webhook
 ## 🛠 Setup & Deployment Guide
 
 ### Step 1: Clone Repository
+
 ```bash
 git clone https://github.com/TechGenDM/Video-Generation-With-Gemini.git
-cd "Video Generation With Gemini"
+cd Video-Generation-With-Gemini
 ```
 
 ### Step 2: Configure Credentials in n8n
-1. Navigate to **Credentials** in your n8n workspace.
-2. Add a new **Telegram API** credential using your `TELEGRAM_BOT_TOKEN`.
-3. Add a **Header Auth** credential for `Nano Banana API` (`Authorization: Bearer <NANO_BANANA_API_KEY>`).
-4. Add a **Header Auth** or query param credential for `Google Gemini API` (`x-goog-api-key: <GEMINI_API_KEY>`).
+
+1. Open **Credentials** in your n8n workspace.
+2. Add a **Telegram API** credential using your `TELEGRAM_BOT_TOKEN`.
+3. Add a **Google Gemini (PaLM) API** credential (or **Header Auth** with `x-goog-api-key: <GEMINI_API_KEY>`) for the Image, Director Agent, and Veo 3 HTTP nodes.
 
 ### Step 3: Import n8n Workflow
-1. In n8n, create a new workflow.
-2. Click **Workflow Menu (⋮) > Import from File** (or paste the workflow JSON from `workflows/ugc_gemini_video_pipeline.json` when exported).
-3. Connect your configured credentials to the corresponding nodes.
 
-### Step 4: Configure Webhook URL
-If using asynchronous generation callbacks:
-- Ensure your n8n instance has a public HTTPS URL (via reverse proxy like Traefik/Nginx, or ngrok for local development).
-- Update the `callback_url` parameter in the Gemini Video Generation HTTP node to point to your n8n Webhook node.
+1. Create a new workflow in n8n.
+2. Click **Workflow Menu (⋮) > Import from File** and select `workflows/ugc_gemini_video_pipeline.json` (or paste your exported workflow JSON).
+3. Bind your saved Telegram and Google Gemini credentials to each highlighted node and activate the workflow.
 
 ---
 
 ## 💡 Engineering Best Practices & Gotchas
 
 ### 1. Handling Large Binary & Base64 Payloads
+
 > [!WARNING]
-> Storing large Base64 strings across consecutive nodes drastically increases memory consumption and inflates the n8n PostgreSQL/SQLite execution database.
+> Passing raw Base64 strings through multiple `Wait` and polling nodes bloats n8n memory and slows down PostgreSQL/SQLite execution storage.
 
-- **Convert to URL Early**: As soon as the image editing step concludes, upload the asset to the image host and forward only the returned URL (`image_url`) through downstream nodes.
-- **Clean Transient Storage**: If caching binary files on local disk, configure automatic cleanup cron jobs to prevent disk exhaustion.
+* **Offload to CDN Immediately**: Convert Base64 image responses to a binary buffer only once, upload to ImgBB/S3 upon user approval, and pass only the lightweight `image_url` string through the rest of the workflow.
 
-### 2. Managing Asynchronous Video Generation
-- Video generation takes between 30 to 90 seconds depending on server load.
-- **Preferred Method (Webhooks)**: Supply a `callback_url` in the Gemini payload so the API notifies n8n when the rendering job finishes.
-- **Fallback Method (Polling with Jitter)**: Use a `Wait` node set to 10 seconds inside a `Loop` checking `GET /videos/status/{id}` with a maximum loop threshold (e.g., 10 iterations) to avoid infinite execution locks.
+### 2. Managing Asynchronous Veo 3 Polling
 
-### 3. Protecting Sensitive API Credentials
-- Never hardcode API keys inside HTTP request node URLs or JavaScript code nodes.
-- Always reference n8n Credential Objects or `$env.VARIABLE_NAME`.
+* Video generation typically takes **40 to 90 seconds**.
+* Use an n8n `Wait` node (set to `10 seconds`) paired with an `IF` node checking `{{ $json.done === true }}` and a loop counter cap (`max_attempts <= 12`) so congested upstream APIs never cause infinite execution locks.
 
-### 4. Deterministic JSON Generation from the LLM
-- Always enable **JSON Mode** or pass a strict system prompt to the Director Agent.
-- Implement a validator code node before calling the Gemini Video API to confirm that `prompt` is non-empty and `aspect_ratio` conforms to `9:16`.
+### 3. Enforcing Strict JSON from the Director Agent
+
+* Always enable **JSON Output Mode** (`responseMimeType: "application/json"`) on the Gemini Director node so downstream HTTP Request nodes can reference `{{ $json.prompt }}` without regex stripping.
 
 ---
 
-## 🤠 Example Scenario: Cowboy Lifestyle UGC Ad
+## 🤠 Example Scenario: Cowboy Lifestyle UGC Hook
 
 ### 1. Initial Prompt & Image (Telegram)
-- **User sends**: A photo of a rugged man wearing a jacket + message: *"Make this look like an authentic vintage Montana rancher lifestyle UGC ad with warm golden hour sunlight."*
 
-### 2. Nano Banana Iteration
-- **Edit 1**: Adds vintage grain, custom denim texture, and a sun-bleached cowboy hat.
-- **User Feedback**: *"Love the hat! Can you make the sunset warmer and add dust particles in the air?"*
-- **Edit 2**: Nano Banana updates the color temperature and injects atmospheric dust motes.
-- **User Action**: Clicks `Approve ✅`.
+* **User sends**: A raw photo of a man in a jacket + caption: *"Turn this into a vintage Montana rancher UGC hook at golden hour."*
+
+### 2. Nano Banana (Gemini 2.5 Flash Image) Iteration
+
+* **Edit 1**: Adds weathered denim texture, a sun-bleached Stetson hat, and warm ranch backlighting.
+* **User Feedback**: *"Love the hat—make the sunset warmer and add floating dust particles."*
+* **Edit 2**: Updates color temperature and atmospheric dust motes.
+* **User Action**: Clicks `✅ Approve & Render Video`.
 
 ### 3. Hosted URL Conversion
-- The final image binary is uploaded to CDN:
-  ```text
-  https://i.ibb.co/wN1K9Xp/cowboy-approved-frame.jpg
-  ```
 
-### 4. Director Agent Synthesis
-- The agent outputs the strict JSON video spec with a UGC script hook, camera movement instructions, and micro-motion timing.
+* The approved frame is uploaded to CDN:
+```text
+https://i.ibb.co/wN1K9Xp/cowboy-approved-frame.jpg
+```
 
-### 5. Gemini v3 Generation & Result
-- Gemini v3 synthesizes an 8-second 60fps vertical video of the cowboy adjusting his hat, smiling into the camera, and looking across the ranch.
-- n8n receives the completed video and pushes `cowboy_ugc_ad.mp4` directly back into the user's Telegram chat.
+### 4. Director Agent & Veo 3 Synthesis
+
+* The Director Agent constructs the 8-second hook prompt with spoken dialogue and ambient ranch audio.
+* Veo 3 renders the `9:16` MP4 with synchronized speech and pushes `cowboy_ugc_hook.mp4` back into the Telegram chat.
 
 ---
 
 ## ❓ Troubleshooting & FAQs
 
 <details>
-<summary><strong>Q: Nano Banana returns a Base64 string, but the image uploader expects binary multipart/form-data.</strong></summary>
+<summary><strong>Q: Gemini 2.5 Flash Image returns a Base64 string, but the image uploader expects binary multipart/form-data.</strong></summary>
 
-Use a **Code** node in n8n immediately following the Nano Banana response with the following snippet:
+Place an n8n **Code** node immediately after the Gemini HTTP Request node with this snippet:
+
 ```javascript
-const base64Data = $json.data.replace(/^data:image\/\w+;base64,/, "");
-const buffer = Buffer.from(base64Data, 'base64');
+const base64Data = $json.candidates[0].content.parts.find(p => p.inlineData)?.inlineData.data;
 
 return [{
   binary: {
     data: {
       data: base64Data,
       mimeType: 'image/jpeg',
-      fileName: 'edited_asset.jpg'
+      fileName: 'approved_frame.jpg'
     }
   },
   json: { ...$json }
 }];
 ```
-Then configure the HTTP Request upload node to send binary data using the `data` property.
+
+Then configure the downstream HTTP Request upload node to send binary data using the `data` property.
 </details>
 
 <details>
 <summary><strong>Q: Video generation fails with "Invalid Image URL".</strong></summary>
 
-Ensure the hosting service provides a **direct link to the image file** (ending in `.jpg`, `.png`, or `.webp`) rather than a web viewing page containing HTML wrappers.
+Verify that your image host returns the **direct file URL** (ending in `.jpg`, `.png`, or `.webp`) rather than an HTML viewer wrapper link.
 </details>
 
 <details>
 <summary><strong>Q: How do I adjust video duration or aspect ratio?</strong></summary>
 
-Modify the Director Agent prompt instructions or the fallback defaults in the workflow schema. Gemini v3 supports `9:16` (portrait), `16:9` (landscape), and `1:1` (square) with standard durations of 5s, 8s, and 10s.
+Modify the Director Agent prompt instructions or the fallback defaults in the workflow schema. Google Veo 3 supports `9:16` (portrait) and `16:9` (landscape) with standard durations of 5s and 8s.
+</details>
+
+<details>
+<summary><strong>Q: Veo 3 operation polling times out or encounters quota limits (429).</strong></summary>
+
+Video generation typically takes 40–90 seconds. Ensure your n8n `Wait` node interval is set to at least 10 seconds with `max_attempts` capped at 12–15. If hitting quota limits, verify your Google AI Studio or Vertex AI project quotas for `veo-3.0-generate-preview`.
 </details>
 
 ---
 
 ## 🗺 Roadmap & Enhancements
 
-- [ ] **Voiceover & Speech Synthesis**: Integrate ElevenLabs node to generate synthetic cowboy narration synchronized with the 8-second video.
-- [ ] **Auto-Captions**: Integrate Whisper / CapCut API to overlay auto-animated UGC captions on the video.
-- [ ] **Direct Social Publishing**: Add auto-scheduling nodes to publish approved videos directly to TikTok and Instagram Reels.
-- [ ] **Multi-Model Fallback**: Route to alternative video models (Runway Gen-3, Luma Dream Machine) if Gemini quotas are reached.
+* [ ] **3-Hook Split-Test Batching**: Automatically generate 3 distinct 5-second visual hook angles (Contrarian, Shock Reaction, Text-Overlay Point) from a single approved starter frame.
+* [ ] **Competitor Ad Spy Integration**: Connect upstream to an Apify Meta Ad Library scraper to clone winning competitor hooks automatically.
+* [ ] **Auto-Burned Hormozi/UGC Captions**: Pass the rendered Veo 3 MP4 through a subtitle-burning webhook so hooks arrive with animated word-by-word captions.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](file:///Users/devasishmishra/Developer/TechGenDM_Codes/Automations/Video%20Generation%20With%20Gemini/README.md) - feel free to adapt and use it in your personal and commercial automation workflows.
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT) — feel free to adapt and use it in your personal and commercial automation workflows.
