@@ -334,3 +334,9 @@ If this workflow helps you, please star the repo.
 ## License
 
 Released under the [MIT License](https://opensource.org/licenses/MIT). You can use and adapt it in personal and commercial automation projects.
+
+## Keywords
+
+AI UGC video generator, AI video ad generator, UGC ad automation, n8n workflow template, n8n AI agent, Google Veo 3.1 API, Veo 3 image-to-video, Gemini image editing (Nano Banana), Telegram bot video generator, human-in-the-loop AI workflow, 9:16 vertical video ads, TikTok ad creative automation, Meta Reels ad hooks, YouTube Shorts automation, DTC ad creative testing, AI video with native audio, text-to-video and image-to-video automation, no-code video ad automation, AI creative strategist tool, UGC hook testing, ad hook generator.
+
+**Related searches:** how to make AI UGC ads with n8n · Veo 3.1 n8n workflow · Nano Banana + Veo workflow · Telegram bot approval workflow for AI video · automate TikTok ad creatives · AI UGC ads for e-commerce · free n8n UGC template
