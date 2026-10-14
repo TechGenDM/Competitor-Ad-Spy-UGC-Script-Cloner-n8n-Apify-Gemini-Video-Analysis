@@ -1,0 +1,17 @@
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# VS Code local/sensitive settings
+.vscode/mcp.json
+.vscode/*.local.json
+
+# Environment variables & secrets
+.env
+.env.*
+*.env
