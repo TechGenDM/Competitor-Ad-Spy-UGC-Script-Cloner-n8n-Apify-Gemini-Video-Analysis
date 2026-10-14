@@ -1,0 +1,9 @@
+{
+	"servers": {
+		"n8n": {
+			"type": "http",
+			"url": "https://techgendm.app.n8n.cloud/mcp-server/http"
+		}
+	},
+	"inputs": []
+}
